@@ -173,7 +173,7 @@ contract TripAlly is SafeMath, StandardToken, Pausable {
     uint256 public constant tokenCreationCap = 100000000*10**decimals;
     uint256 constant tokenCreationCapPreICO = 750000*10**decimals;
 
-    uint public oneTokenInWei = 2000000000000000;
+    uint256 public oneTokenInWei = 2000000000000000;
 
     Phase public currentPhase = Phase.PreICO;
 
@@ -183,9 +183,10 @@ contract TripAlly is SafeMath, StandardToken, Pausable {
     }
 
     event CreateALLY(address indexed _to, uint256 _value);
+    event PriceChanged(string _text, uint _newPrice);
+    event StageChanged(string _text);
 
     function TripAlly() {
-        owner = msg.sender;
     }
 
     function () payable {
@@ -214,22 +215,27 @@ contract TripAlly is SafeMath, StandardToken, Pausable {
     }
 
     function withdraw(address _toAddress, uint256 amount) external onlyOwner {
+        require(_toAddress != address(0));
         _toAddress.transfer(amount);
     }
 
-    function setEthPrice(uint _tokenPrice) external onlyOwner {
+    function setEthPrice(uint256 _tokenPrice) external onlyOwner {
         oneTokenInWei = _tokenPrice;
+        PriceChanged("New price is", _tokenPrice);
     }
-
+    
     function setICOPhase() external onlyOwner {
         currentPhase = Phase.ICO;
+        StageChanged("Current stage is ICO");
     }
 
     function setPreICOPhase() external onlyOwner {
         currentPhase = Phase.PreICO;
+        StageChanged("Current stage is PreICO");
     }
 
-    function generateTokens(address _reciever, uint _amount) external onlyOwner {
+    function generateTokens(address _reciever, uint256 _amount) external onlyOwner {
+        require(_reciever != address(0));
         uint multiplier = 10 ** decimals;
         uint256 tokens = _amount * multiplier;
         balances[_reciever] += tokens;
