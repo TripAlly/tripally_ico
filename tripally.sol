@@ -165,53 +165,86 @@ contract Pausable is Ownable {
   }
 }
 
-contract Razoom is SafeMath, StandardToken, Pausable {
+contract TripAlly is SafeMath, StandardToken, Pausable {
 
-    string public constant name = "RAZOOM PreToken";
-    string public constant symbol = "RZMP";
+    string public constant name = "TripAlly Token";
+    string public constant symbol = "ALLY";
     uint256 public constant decimals = 18;
-    uint256 public constant tokenCreationCap = 45000*10**decimals;
-    address public multiSigWallet;
-    uint public totalRecieved;
+    uint256 public constant tokenCreationCap = 100000000*10**decimals;
+    uint256 constant tokenCreationCapPreICO = 750000*10**decimals;
 
-    // 1 ETH = 300 , 1 token = 20$ USD Date: 11.08.2017
-    uint public oneTokenInWei = 70000000000000000;
+    uint256 public oneTokenInWei = 2000000000000000;
 
-    event CreateRZM(address indexed _to, uint256 _value);
+    uint public totalEthRecieved;
 
-    function Razoom(address multisig) {
-        owner = msg.sender;
-        multiSigWallet = multisig;
+    Phase public currentPhase = Phase.PreICO;
+
+    enum Phase {
+        PreICO,
+        ICO
+    }
+
+    event CreateALLY(address indexed _to, uint256 _value);
+    event PriceChanged(string _text, uint _newPrice);
+    event StageChanged(string _text);
+    event Withdraw(address to, uint amount);
+
+    function TripAlly() {
     }
 
     function () payable {
         createTokens();
     }
 
+
     function createTokens() internal whenNotPaused {
-        if (msg.value <= 0) revert();
-
         uint multiplier = 10 ** decimals;
-        uint256 tokens = safeMult(msg.value, multiplier) / oneTokenInWei;
-
+        uint256 tokens = safeDiv(msg.value, oneTokenInWei) * multiplier;
         uint256 checkedSupply = safeAdd(totalSupply, tokens);
-        if (tokenCreationCap < checkedSupply) revert();
 
+        if (currentPhase == Phase.PreICO &&  checkedSupply <= tokenCreationCapPreICO) {
+            addTokens(tokens);
+        } else if (currentPhase == Phase.ICO && checkedSupply <= tokenCreationCap) {
+            addTokens(tokens);
+        } else {
+            revert();
+        }
+    }
+
+    function addTokens(uint256 tokens) internal {
+        if (msg.value <= 0) revert();
         balances[msg.sender] += tokens;
-        totalRecieved += msg.value;
         totalSupply = safeAdd(totalSupply, tokens);
+        totalEthRecieved += msg.value;
     }
 
-    function withdraw() external onlyOwner {
-        multiSigWallet.transfer(this.balance);
+    function withdraw(address _toAddress, uint256 amount) external onlyOwner {
+        require(_toAddress != address(0));
+        _toAddress.transfer(amount);
+        Withdraw(_toAddress, amount);
     }
 
-    function setEthPrice(uint _tokenPrice) onlyOwner {
+    function setEthPrice(uint256 _tokenPrice) external onlyOwner {
         oneTokenInWei = _tokenPrice;
+        PriceChanged("New price is", _tokenPrice);
     }
 
-    function replaceMultisig(address newMultisig) onlyOwner {
-        multiSigWallet = newMultisig;
+    function setICOPhase() external onlyOwner {
+        currentPhase = Phase.ICO;
+        StageChanged("Current stage is ICO");
+    }
+
+    function setPreICOPhase() external onlyOwner {
+        currentPhase = Phase.PreICO;
+        StageChanged("Current stage is PreICO");
+    }
+
+    function generateTokens(address _reciever, uint256 _amount) external onlyOwner {
+        require(_reciever != address(0));
+        uint multiplier = 10 ** decimals;
+        uint256 tokens = _amount * multiplier;
+        balances[_reciever] += tokens;
+        totalSupply = safeAdd(totalSupply, tokens);
     }
 
 }
