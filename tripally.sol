@@ -185,6 +185,7 @@ contract TripAlly is SafeMath, StandardToken, Pausable {
     event CreateALLY(address indexed _to, uint256 _value);
     event PriceChanged(string _text, uint _newPrice);
     event StageChanged(string _text);
+    event Withdraw(address to, uint amount);
 
     function TripAlly() {
     }
@@ -217,13 +218,14 @@ contract TripAlly is SafeMath, StandardToken, Pausable {
     function withdraw(address _toAddress, uint256 amount) external onlyOwner {
         require(_toAddress != address(0));
         _toAddress.transfer(amount);
+        Withdraw(_toAddress, amount);
     }
 
     function setEthPrice(uint256 _tokenPrice) external onlyOwner {
         oneTokenInWei = _tokenPrice;
         PriceChanged("New price is", _tokenPrice);
     }
-    
+
     function setICOPhase() external onlyOwner {
         currentPhase = Phase.ICO;
         StageChanged("Current stage is ICO");
