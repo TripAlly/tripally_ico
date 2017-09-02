@@ -173,7 +173,7 @@ contract TripAlly is SafeMath, StandardToken, Pausable {
     uint256 public constant tokenCreationCap = 100000000*10**decimals;
     uint256 constant tokenCreationCapPreICO = 750000*10**decimals;
 
-    uint256 public oneTokenInWei = 2000000000000000;
+    uint256 public oneTokenInWei = 3000000000000000;
 
     uint public totalEthRecieved;
 
@@ -198,8 +198,8 @@ contract TripAlly is SafeMath, StandardToken, Pausable {
 
 
     function createTokens() internal whenNotPaused {
-        uint multiplier = 10 ** decimals;
-        uint256 tokens = safeDiv(msg.value, oneTokenInWei) * multiplier;
+        uint multiplier = 10 ** 10;
+        uint256 tokens = safeDiv(msg.value*100000000, oneTokenInWei) * multiplier;
         uint256 checkedSupply = safeAdd(totalSupply, tokens);
 
         if (currentPhase == Phase.PreICO &&  checkedSupply <= tokenCreationCapPreICO) {
