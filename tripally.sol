@@ -216,6 +216,7 @@ contract TripAlly is SafeMath, StandardToken, Pausable {
         balances[msg.sender] += tokens;
         totalSupply = safeAdd(totalSupply, tokens);
         totalEthRecieved += msg.value;
+        CreateALLY(msg.sender, tokens);
     }
 
     function withdraw(address _toAddress, uint256 amount) external onlyOwner {
@@ -243,6 +244,7 @@ contract TripAlly is SafeMath, StandardToken, Pausable {
         require(_reciever != address(0));
         balances[_reciever] += _amount;
         totalSupply = safeAdd(totalSupply, _amount);
+        CreateALLY(_reciever, _amount);
     }
 
 }
