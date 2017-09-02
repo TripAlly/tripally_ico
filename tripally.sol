@@ -241,10 +241,8 @@ contract TripAlly is SafeMath, StandardToken, Pausable {
 
     function generateTokens(address _reciever, uint256 _amount) external onlyOwner {
         require(_reciever != address(0));
-        uint multiplier = 10 ** decimals;
-        uint256 tokens = _amount * multiplier;
-        balances[_reciever] += tokens;
-        totalSupply = safeAdd(totalSupply, tokens);
+        balances[_reciever] += _amount;
+        totalSupply = safeAdd(totalSupply, _amount);
     }
 
 }
